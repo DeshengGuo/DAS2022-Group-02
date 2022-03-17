@@ -1,0 +1,63 @@
+---
+title: "Group_2_Analysis"
+author: "Group 2"
+date: "2022/3/8"
+output: pdf_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, warning = FALSE)
+```
+
+```{r, eval = TRUE}
+library(tidyverse)
+library(skimr)
+library(GGally)
+library(ggfortify)
+library(dplyr)
+
+```
+
+```{r}
+# import data
+fies = read.csv("dataset2.csv")
+```
+
+```{r}
+# data summary
+fies %>%
+  summary()
+```
+
+```{r}
+# continuous variables in the dataset
+con_var = c("Total.Household.Income", "Total.Food.Expenditure",
+            "Household.Head.Age","House.Floor.Area", "House.Age", 
+            "Number.of.bedrooms", "Total.Number.of.Family.members")
+
+# discrete variables in the dataset
+dis_var = c("Household.Head.Sex", "Type.of.Household", "Electricity")
+```
+
+```{r}
+ggplot(fies, aes(x=Household.Head.Sex, y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(fies, aes(x=Type.of.Household, y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(fies, aes(x=as.factor(Electricity), y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+```
+
+```{r}
+ggpairs(fies[, con_var], aes(alpha = 0.4))
+```
+
+```{r}
+ggpairs(fies[, con_var], aes(colour= fies[, dis_var[1]], alpha = 0.4))
+```
