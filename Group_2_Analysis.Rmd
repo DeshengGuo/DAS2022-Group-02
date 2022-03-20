@@ -11,53 +11,33 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, warning = FALS
 
 ```{r, eval = TRUE}
 library(tidyverse)
-library(skimr)
-library(GGally)
-library(ggfortify)
-library(dplyr)
-
+library(moderndive)
+library(gapminder)
+library(sjPlot)
+library(stats)
+library(jtools)
+library(MASS)
+library(kableExtra)
+library(olsrr)
+library(qcc)
 ```
 
 ```{r}
-# import data
-fies = read.csv("dataset2.csv")
+#import data
+data<-read.csv("dataset2.csv")
+
+#processing discrete data
+data[, 4] <- as.factor(data[, 4])
+data[, 6] <- as.factor(data[, 6])
+data[, 11] <- as.factor(data[, 11])
+
+data = data[, -2]
 ```
 
-```{r}
-# data summary
-fies %>%
-  summary()
-```
+# Introduction
 
-```{r}
-# continuous variables in the dataset
-con_var = c("Total.Household.Income", "Total.Food.Expenditure",
-            "Household.Head.Age","House.Floor.Area", "House.Age", 
-            "Number.of.bedrooms", "Total.Number.of.Family.members")
+# Exploratory Data Analysis
 
-# discrete variables in the dataset
-dis_var = c("Household.Head.Sex", "Type.of.Household", "Electricity")
-```
+# Modelling and Results
 
-```{r}
-ggplot(fies, aes(x=Household.Head.Sex, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
-
-```{r}
-ggplot(fies, aes(x=Type.of.Household, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
-
-```{r}
-ggplot(fies, aes(x=as.factor(Electricity), y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
-
-```{r}
-ggpairs(fies[, con_var], aes(alpha = 0.4))
-```
-
-```{r}
-ggpairs(fies[, con_var], aes(colour= fies[, dis_var[1]], alpha = 0.4))
-```
+# Conclusions and Future Work
