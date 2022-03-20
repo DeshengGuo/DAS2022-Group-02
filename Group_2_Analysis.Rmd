@@ -11,232 +11,33 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, warning = FALS
 
 ```{r, eval = TRUE}
 library(tidyverse)
-library(skimr)
-library(GGally)
-library(ggfortify)
-library(dplyr)
-library(nnet)
-library(caret)
-library(olsrr)
+library(moderndive)
+library(gapminder)
+library(sjPlot)
+library(stats)
+library(jtools)
 library(MASS)
+library(kableExtra)
+library(olsrr)
+library(qcc)
 ```
 
 ```{r}
-# import data
-fies = read.csv("dataset2.csv")
+#import data
+data<-read.csv("dataset2.csv")
+
+#processing discrete data
+data[, 4] <- as.factor(data[, 4])
+data[, 6] <- as.factor(data[, 6])
+data[, 11] <- as.factor(data[, 11])
+
+data = data[, -2]
 ```
 
-```{r}
-# data summary
-fies %>%
-  summary()
-```
+# Introduction
 
-```{r}
-#plot the distribution of "Total.Number.of.Family.members"
-ggplot(fies, aes(x=Total.Number.of.Family.members)) +
-  geom_histogram()
-```
+# Exploratory Data Analysis
 
-```{r}
-#boxplot of "household.Head.Sex" vs "Total.Number.of.Family.members"
-ggplot(fies, aes(x=Household.Head.Sex, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
+# Modelling and Results
 
-```{r}
-#barplot of distribution of 
-#"Total.Number.of.Family.members" by "Household.Head.Sex"
-ggplot(fies, aes(group=Household.Head.Sex, 
-                 x=Total.Number.of.Family.members,
-                 fill=Household.Head.Sex)) +
-  geom_bar(position="dodge", stat="count")
-
-```
-
-```{r}
-#boxplot of "Type.of.Household" vs "Total.Number.of.Family.members"
-ggplot(fies, aes(x=Type.of.Household, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
-
-```{r}
-#barplot of distribution of 
-#"Total.Number.of.Family.members" by "Type.of.Household"
-ggplot(fies, aes(group=Type.of.Household, 
-                 x=Total.Number.of.Family.members,
-                 fill=Type.of.Household)) +
-  geom_bar(position="dodge", stat="count")
-
-```
-
-```{r}
-#boxplot of "Electricity" vs "Total.Number.of.Family.members"
-ggplot(fies, aes(x=as.factor(Electricity), y=Total.Number.of.Family.members)) +
-  geom_boxplot()
-```
-
-```{r}
-ggplot(fies, aes(y=Total.Number.of.Family.members, 
-                 x=log(Total.Household.Income),
-                color = Household.Head.Sex)) +
-  geom_jitter()+
-  geom_smooth(method = "lm", se = FALSE)
-```
-
-```{r}
-ggplot(fies, aes(y=Total.Number.of.Family.members, 
-                 x=log(Total.Food.Expenditure),
-                color = Type.of.Household)) +
-  geom_jitter()+
-  geom_smooth(method = "lm", se = FALSE)
-```
-
-```{r}
-# continuous variables in the dataset
-con_var = c("Total.Household.Income", "Total.Food.Expenditure",
-            "Household.Head.Age","House.Floor.Area", "House.Age", 
-            "Number.of.bedrooms")
-
-# discrete variables in the dataset
-dis_var = c("Household.Head.Sex", "Type.of.Household", 
-            "Electricity", "Total.Number.of.Family.members")
-
-ggpairs(fies[, c("Total.Number.of.Family.members", con_var)], aes(alpha = 0.4))
-```
-
-# Poisson Regression
-
-## Full Model
-
-```{r}
-model_pr = glm(Total.Number.of.Family.members ~ 
-                 log(Total.Food.Expenditure) +log(Total.Household.Income) +                          Household.Head.Age +House.Floor.Area + 
-                 House.Age +Number.of.bedrooms +Household.Head.Sex + 
-                 Type.of.Household + Electricity, 
-                   family = poisson, data=fies)
-```
-
-```{r}
-summary(model_pr)
-```
-
-```{r}
-model_pr_opt = step(model_pr)
-```
-
-```{r}
-summary(model_pr_opt)
-```
-
-Improve a little. Next, try some more complex model.
-
-## Model_1
-
-```{r}
-model_1 = glm(Total.Number.of.Family.members ~ 
-                 log(Total.Food.Expenditure) * Type.of.Household +
-                  log(Total.Household.Income) *   Household.Head.Sex
-              + Household.Head.Age +
-                  House.Age +Number.of.bedrooms + Electricity, 
-                   family = poisson, data=fies)
-```
-
-```{r}
-summary(model_1)
-```
-
-## Underdispersion
-
-```{r}
-ggplot(model_1, aes(x=log(fitted(model_1)), 
-              y=log((fies$Total.Number.of.Family.members-fitted(model_1))^2),
-              color = as.factor(fies$Total.Number.of.Family.members)))+
-geom_jitter() +
-geom_abline(slope=1, intercept=0, col="#a6d96a", size=1) +
-ylab(expression((y-hat(mu))^2)) + xlab(expression(hat(mu)))
-```
-
-Underdispersion. Try quasipoisson.
-
-```{r}
-X2 <- sum(resid(model_1, type = "pearson")^2)
-dp <- X2 / model_1$df.res
-dp
-```
-
-```{r}
-drop1(model_1, test = "F")
-```
-
-All coefficients become significant.
-
-## Model_2 (quasipoisson)
-
-```{r}
-model_2 = glm(Total.Number.of.Family.members ~ 
-                 log(Total.Food.Expenditure) * Type.of.Household +
-                  log(Total.Household.Income) *   Household.Head.Sex
-              + Household.Head.Age +
-                  House.Age +Number.of.bedrooms + Electricity, 
-                   family = quasipoisson(link = "log"), data=fies)
-
-```
-
-```{r}
-summary(model_2)
-```
-
-```{r}
-# Residual plots vs. predicted
-pred <- predict(model_1, type = "response")
-stand.resid <- rstandard(model = model_1, type = "pearson") # Standardised Pearson residuals
-par(mfrow=c(1,2))
-plot(x = pred, y = stand.resid, xlab = "Predicted Total.Number.of.Family.members", ylab = "Standardised Pearson residuals",
-main = "Regular likelihood", ylim = c(-5,5))
-abline(h = c(-3, -2, 0, 2, 3), lty = "dotted", col = "red")
-
-pred <- predict(model_2, type = "response")
-stand.resid <- rstandard(model = model_2, type = "pearson") # Standardised Pearson residuals
-plot(x = pred, y = stand.resid, xlab = "Predicted Total.Number.of.Family.members", ylab = "Standardised Pearson residuals",
-main = "Quasi-likelihood", ylim = c(-5,5))
-abline(h = c(-3, -2, 0, 2, 3), lty = "dotted", col = "red")
-```
-
-???
-
-### Negative binomial (not used)
-
-```{r}
-model_3 = glm.nb(Total.Number.of.Family.members ~ 
-                 log(Total.Food.Expenditure) * Type.of.Household +
-                  log(Total.Household.Income) *   Household.Head.Sex
-              + Household.Head.Age +
-                  House.Age +Number.of.bedrooms + Electricity, 
-                   data=fies)
-```
-
-```{r}
-summary(model_3)
-```
-
-```{r}
-res.sq <- residuals(model_1, type = "response")^2
-set1 <- data.frame(res.sq, mu.hat = model_1$fitted.values)
-fit.lin <- lm(formula = res.sq ~ mu.hat, data = set1)
-fit.quad <- lm(formula = res.sq ~ mu.hat + I(mu.hat^2), data = set1)
-
-summary(fit.quad)
-
-```
-
-```{r}
-plot(set1$mu.hat, y = set1$res.sq, xlab = "Predicted count",
-ylab = "Squared Residual")
-curve(expr = predict(fit.lin, newdata = data.frame(mu.hat = x), type = "response"),
-col = "blue", add = TRUE, lty = "solid")
-curve(expr = predict(fit.quad, newdata = data.frame(mu.hat = x), type = "response"),
-col = "red", add = TRUE, lty = "dashed")
-legend("topleft", legend = c("Linear", "Quadratic"), col = c( "blue", "red"),
-lty = c("solid", "dashed"), bty = "n")
-```
+# Conclusions and Future Work
