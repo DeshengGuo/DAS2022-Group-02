@@ -1,4 +1,5 @@
 library(olsrr)
+library(dplyr)
 
 data <- read.csv("dataset2.csv")
 
@@ -25,7 +26,7 @@ encode <- function(x) {
   return (results)
 }
 
-min.aic = 1000
+min.aic = model$aic
 which.model = 0
 for (i in 33:1023) { 
   # 32 contains single variable: Total.Number and will not be used, 
