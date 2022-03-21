@@ -20,6 +20,8 @@ library(MASS)
 library(kableExtra)
 library(olsrr)
 library(qcc)
+library(skimr)
+library(GGally)
 ```
 
 ```{r}
@@ -37,6 +39,96 @@ data = data[, -2]
 # Introduction
 
 # Exploratory Data Analysis
+
+## Statistics Summary
+
+In order to make it more clear, we devide all variables into continous and discrete variables.
+
+```{r}
+#divide continuous and discrete variables
+con_var = c("Total.Number.of.Family.members","Total.Household.Income", 
+            "Total.Food.Expenditure","Household.Head.Age", 
+           "House.Floor.Area", "House.Age", "Number.of.bedrooms")
+
+dis_var = c("Household.Head.Sex", "Type.of.Household", "Electricity")
+
+# data summary of continuous variables
+data[con_var] %>%
+  skim() %>%
+  transmute(Variable=skim_variable, 
+            Mean=round(numeric.mean), 
+            SD=round(numeric.sd),
+            Min=numeric.p0, 
+            Median=numeric.p50,  
+            Max=numeric.p100, 
+            IQR = numeric.p75-numeric.p50) %>%
+  kable(caption = '\\label{tab:summaries_con} Summary statistics of continuous variables') #%>%
+  #kable_styling(font_size = 10, latex_options = "hold_position")
+
+```
+
+From Table \ref{tab:summaries_con}, we can see that the median of "Total.Household.Income" is much less than its mean. It indicates that high income families have considerable impact on the samples. However, when we look at "Total.Food.Expenditure", the difference of mean and median is much smaller comparing with "Total.Household.Income".
+
+The range of "Total.Number.of.Family.members" is from 1 to 16. The median and the mean are equal which is 4. The standard deviation is 2 so the variance is 4 which is equal to the mean. This means the distribution of "Total.Number.of.Family.members" may be poisson distribution.
+
+Regarding other continuous variables, we do not find something special.
+
+```{r}
+# data summary of discrete variables
+data[dis_var] %>%
+  skim() %>%
+   transmute(Variable=skim_variable, 
+            Counts=factor.top_counts) %>%
+  kable(caption = '\\label{tab:summaries_dis} Summary statistics of discrete variables') #%>%
+  #kable_styling(font_size = 10, latex_options = "hold_position")
+```
+
+Table \ref{tab:summaries_dis} shows that most house heads are male, there are a few of families consist of unrelated persons and some houses still do not have electricity.
+
+## Data Visualization Analysis
+
+```{r, fig.cap = "\\label{fig:distri_y} Distribution of Total.Number.of.Family.members"}
+
+#plot the distribution of "Total.Number.of.Family.members"
+ggplot(data, aes(x=Total.Number.of.Family.members)) +
+  geom_histogram()
+```
+
+As Figure \ref{fig:distri_y} shows that the variance of "Total.Number.of.Family.members" is equal to its mean. In addition, Figure \ref{fig:distri_y} shows that the distribution of "Total.Number.of.Family.members" is symmetry from 1 to 9 which is similar to poisson distribution. In general, we can infer that except some families with people numbers higher than 9, the distribution of "Total.Number.of.Family.members" is likely to be poisson distribution and poisson logistic regression may be applied to solve our problem.
+
+```{r, fig.cap = "\\label{fig:sex_no} Boxplot of Household.Head.Sex and Total.Number.of.Family.members"}
+#boxplot of "household.Head.Sex" vs "Total.Number.of.Family.members"
+ggplot(data, aes(x=Household.Head.Sex, y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+```
+
+From Figure \ref{fig:sex_no}, we can see that on average, male head families have more members than female. However, we also can see there is overlap in the IQR's.
+
+```{r, fig.cap = "\\label{fig:type_no} Boxplot of Type.of.Household and Total.Number.of.Family.members"}
+#boxplot of "Type.of.Household" vs "Total.Number.of.Family.members"
+ggplot(data, aes(x=Type.of.Household, y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+```
+
+From Figure \ref{fig:type_no}, we can see that on average, different types of household, on average, have different numbers of members as well. Extended Families have more members than single families and single families have more members than nonrelated persons families. There are overlaps between them as well.
+
+```{r, fig.cap = "\\label{fig:elec_no} Boxplot of Electricity and Total.Number.of.Family.members"}
+#boxplot of "Electricity" vs "Total.Number.of.Family.members"
+ggplot(data, aes(x=as.factor(Electricity), y=Total.Number.of.Family.members)) +
+  geom_boxplot()
+
+```
+
+Figure \ref{fig:elec_no} shows that on average, electricity has no impact on the numbers of members in each family.
+
+```{r, , fig.cap = "\\label{fig:matrix} Matrix of plots of continuous variables"}
+#plot matrix of continuous variables
+ggpairs(data[, con_var], aes(alpha = 0.1))
+```
+
+From Figure \ref{fig:matrix}, we can see that the correlation between "Total.Number.of.Family.members" and other continuous variables weak and very weak. When we look at the first column of this matrix, we can find that although "Total.Number.of.Family.members" and other continuous variables only have weak linear relationship, there may be non-linear relationship between them.
+
+We we look at the correlation of other variables except "Total.Number.of.Family.members", we can find that only "Total.Household.Income" and "Total.Food.Expenditure" have moderate positive correlation and others only have weak and very weak correlation.
 
 # Modelling and Results
 
