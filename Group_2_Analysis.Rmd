@@ -1,7 +1,7 @@
 ---
 title: "Group_2_Analysis"
 author: "Group 2"
-date: "2022/3/8"
+date: "2022/3/20"
 output: pdf_document
 ---
 
@@ -11,53 +11,87 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, warning = FALS
 
 ```{r, eval = TRUE}
 library(tidyverse)
-library(skimr)
-library(GGally)
-library(ggfortify)
-library(dplyr)
-
+library(moderndive)
+library(gapminder)
+library(sjPlot)
+library(stats)
+library(jtools)
+library(MASS)
+library(kableExtra)
+library(olsrr)
+library(qcc)
 ```
 
 ```{r}
-# import data
-fies = read.csv("dataset2.csv")
+#import data
+data<-read.csv("dataset2.csv")
+
+#processing discrete data
+data[, 4] <- as.factor(data[, 4])
+data[, 6] <- as.factor(data[, 6])
+data[, 11] <- as.factor(data[, 11])
+
+data = data[, -2]
 ```
 
+# Introduction
+
+# Exploratory Data Analysis
+
+# Modelling and Results
+Because the dependent variable of the data of this fitting model is the counting variable (the total number of families), and the independent variable is the continuity or category variable. In addition, the variable data are measured every three years, and the length of the whole observation concentration is unchanged. This study decided to use Poisson regression to fit the model. Poisson regression mainly has two assumptions. Firstly, the human time risk of different objects with the same characteristics and at the same time is homogeneous. Secondly, when the sample size is larger and larger, the mean of frequency tends to variance.
+
+## Fitting model
+
+### Preliminary fitting model
 ```{r}
-# data summary
-fies %>%
-  summary()
+model<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure+Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Floor.Area+House.Age+Number.of.bedrooms+Electricity, data=data, family = "poisson")
+summary(model)
 ```
-
+The stepwise method was used to complete the screening of independent variables
 ```{r}
-# continuous variables in the dataset
-con_var = c("Total.Household.Income", "Total.Food.Expenditure",
-            "Household.Head.Age","House.Floor.Area", "House.Age", 
-            "Number.of.bedrooms", "Total.Number.of.Family.members")
-
-# discrete variables in the dataset
-dis_var = c("Household.Head.Sex", "Type.of.Household", "Electricity")
+step(model)
 ```
-
+Use a better model
 ```{r}
-ggplot(fies, aes(x=Household.Head.Sex, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
+model.best<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure +Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Age+Number.of.bedrooms, data=data, 
+family = "poisson")
 ```
 
+### Look for outliers in the model
 ```{r}
-ggplot(fies, aes(x=Type.of.Household, y=Total.Number.of.Family.members)) +
-  geom_boxplot()
+library(car)
+outlierTest(model.best)
+```
+Remove the row of outliers
+```{r}
+data<-data[-944,]
+model.best<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure +Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Age+Number.of.bedrooms, data=data, 
+family = "poisson")
+outlierTest(model.best)
+```
+Without outliers, the best model is obtained
+```{r}
+summary(model.best)
 ```
 
+### Test the goodness of fit of Poisson model
 ```{r}
-ggplot(fies, aes(x=as.factor(Electricity), y=Total.Number.of.Family.members)) +
-  geom_boxplot()
+library(epiDisplay)
+poisgof(model.best)
+```
+The p value is 1, which indicates that the goodness of fit of the model is good.
+
+### Coefficient and interpretation of model
+```{r}
+exp(coef(model.best))
+```
+In the MIMAROPA region, all variables except Number.of.bedrooms and Electricity show significance. While keeping other variables unchanged, the annual household income (in Philippines Peso) will be increased by 1 unit, and the number of people living in the house will be multiplied by 0.999995. Annual expenditure by the household on food changes, the number of epilepsy will be multiplied by 1.0000061. If the gender of head of the houses sex is male, the number of people living in the house will be multiplied by 1.2731562, indicating that the owner is male, which has a positive impact on the increase of the number of people living in the room. The number of people living in the house will be multiplied by 0.9947412 for each additional year of head of the houses age. In the relationship between the group of people living in the house, both single family and two or more nonrelated persons / members will both have a negative impact on the increase of the number of people living in the room. The number of people living in the house will be multiplied by 0.9971080 for each year of age of the building.
+
+### Poisson regression predicting Total.Number.of.Family.members
+```{r}
+idr.display(model.best)
 ```
 
-```{r}
-ggpairs(fies[, con_var], aes(alpha = 0.4))
-```
 
-```{r}
-ggpairs(fies[, con_var], aes(colour= fies[, dis_var[1]], alpha = 0.4))
-```
+# Conclusions and Future Work
