@@ -113,6 +113,8 @@ In the MIMAROPA region, all variables except Number.of.bedrooms and Electricity 
 ### Poisson regression predicting Total.Number.of.Family.members
 ```{r}
 idr.display(model.best)
+plot_model(model.best, show.values = TRUE,
+           title = "", show.p = FALSE, value.offset = 0.25)
 ```
 
 \newpage
