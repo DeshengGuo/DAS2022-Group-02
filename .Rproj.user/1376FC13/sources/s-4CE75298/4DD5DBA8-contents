@@ -1,0 +1,52 @@
+---
+title: "Group_2_Analysis"
+author: "Group 2"
+date: "2022/3/20"
+output: pdf_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, warning = FALSE)
+```
+
+```{r, eval = TRUE}
+library(tidyverse)
+library(moderndive)
+library(gapminder)
+library(sjPlot)
+library(stats)
+library(jtools)
+library(MASS)
+library(kableExtra)
+library(olsrr)
+#library(qcc)
+```
+
+```{r}
+#import data
+data<-read.csv("dataset2.csv")
+
+#processing discrete data
+data[, 4] <- as.factor(data[, 4])
+data[, 6] <- as.factor(data[, 6])
+data[, 11] <- as.factor(data[, 11])
+
+data = data[, -2]
+```
+
+# Introduction
+
+\quad The Family Income and Expenditure Survey (FIES) is a survey of every households in a country which is taken every three years. This gives information on the levels of living and disparities in income of each family and spending patterns.
+
+In this project, we use the pre-downloaded FIES data of a single region of Philippines. It is Mimaropa, former designated as Region IV-B and formally known as the southwestern Tagalog region. There are 1249 recorded households. Each of them contains 11 following variables: \\
+$\cdot$ `Total.Household.Income`
+
+
+
+
+
+# Exploratory Data Analysis
+
+# Modelling and Results
+
+# Conclusions and Future Work
