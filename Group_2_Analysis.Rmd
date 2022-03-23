@@ -83,7 +83,7 @@ The range of "Total.Number.of.Family.members" is from 1 to 16. The median and th
 Regarding other continuous variables, we do not find something special.
 
 ```{r}
-#select continuous variables
+#select discrete variables
 dis_var = c("Household.Head.Sex", "Type.of.Household", "Electricity")
 
 # data summary of discrete variables
@@ -92,8 +92,7 @@ data[dis_var] %>%
    transmute(Variable=skim_variable, 
             Counts=factor.top_counts) %>%
   kable(caption = '\\label{tab:summaries_dis} 
-        Summary statistics of discrete variables') #%>%
-  #kable_styling(font_size = 10, latex_options = "hold_position")
+        Summary statistics of discrete variables')
 ```
 
 Regarding Household.Head.Sex, Mal represents male, Fem represents female. Regarding Type.of.Household, Sin means Single Family, Ext means Extended Family and Two means Two or More Nonrelated Persons/Members. Regarding Electricity, 1 means the house has electricity, 0 means does not have.
