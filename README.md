@@ -5,7 +5,7 @@ This repository is about Data Analysis Skill course second group project.
 
 **Team member**: Chengcheng Zheng, Desheng Guo, Fengkai YU, Panthakan Boonsuriyatham, Xunke DENG
 
-**Project name:**
+**Project name:** Factors influence the number of people living in a household
 
 **Introduction:** In this project, we use the pre-downloaded FIES data of a single region of Philippines. It is Mimaropa, former designated as Region IV-B and formally known as the southwestern Tagalog region. There are 1249 recorded households in the dataset. We are interested in investigating the factors influencing the number of household familily members. 
 
