@@ -304,7 +304,36 @@ The p value is 1, which indicates that the goodness of fit of the model is good.
 ```{r}
 #transform coefficients into exponential form
 exp(coef(model.best))
+Coefs<-exp(coef(model.best))
 ```
+
+### Fitted Poisson regression model
+$$ 
+\begin{split}
+\mbox{log}(\hat{Y_i}) = \mbox{log}(\hat{\mu_i}) &= `r Coefs[1]` + `r Coefs[2]` \cdot \mbox{log} (Total.Household.Income) + `r Coefs[3]` \cdot \mbox{log}(Total.Food.Expenditure) \\
+&+ `r Coefs[4]` \cdot \mathbb{I}_{\mbox{Male}}(x)+ `r Coefs[5]` \cdot Household.Head.Age \\
+&+ `r Coefs[6]` \cdot \mathbb{I}_{\mbox{Single Family}}(x)+ `r Coefs[8]` \cdot House Age
+\end{split}
+$$
+where\newline
+• `Total.Household.Income` is the Annual household income (in Philippine peso);\newline
+• `Total.Food.Expenditure` is the annual expenditure by the household on food (in Philippine peso);\newline
+• `Household.Head.Age` is the head of the households age (in years);\newline
+• `House.Age` is the age of the building (in years)\newline
+•  $\mathbb{I}_{\mbox{Male}}(x)$ is an indicator function such that
+$$\mathbb{I}_{\mbox{Male}}(x)=\left\{
+\begin{array}{ll}
+1 ~~~ \mbox{if Sex of} ~ x \mbox{th observation is Male},\\
+0 ~~~ \mbox{Otherwise}.\\
+\end{array}
+\right.$$
+• $\mathbb{I}_{\mbox{Single Family}}(x)$ is an indicator function such that
+$$\mathbb{I}_{\mbox{Single Family}}(x)=\left\{
+\begin{array}{ll}
+1 ~~~ \mbox{if type of family of} ~ x \mbox{th observation is Single Family},\\
+0 ~~~ \mbox{Otherwise}.\\
+\end{array}
+\right.$$
 
 In the MIMAROPA region, all variables except Number.of.bedrooms and Electricity show significance. While keeping other variables unchanged, the number of people living in the house will be multiplied by 0.7757 for every 1 unit increase in the logarithm of the family's annual income (Philippine Peso).the number of people living in the house will be multiplied by 2.0701 for every 1 unit increase in the logarithm of Annual expenditure by the household on food (inmPhilippine peso).If the gender of head of the houses sex is male, the number of people living in the house will be multiplied by 1.2119, indicating that the owner is male, which has a positive impact on the increase of the number of people living in the room. The number of people living in the house will be multiplied by 0.9966 for each additional year of head of the houses age. In the relationship between the group of people living in the house,two or more nonrelated persons / members have no significant effect on the number of residents and single family will have a negative impact on the increase of the number of people living in the room. The number of people living in the house will be multiplied by 0.9977 for each year of age of the building.
 
