@@ -285,8 +285,9 @@ It can be seen from the above figure that Total.Household.Income,Total.Food.Expe
 
 # Conclusions and Future Work
 
-\quad After selecting models, we have found that the influential variables of the number of people living in a household are : $a, b, c, d$
+\quad After selecting models, we have found that the influential variables of the number of people living in a household are : the Annual household income, the annual expenditure by the household on food, the head of the households sex, the head of the households age, the relationship between the group of people living in the house, and the age of the building. The model is built on poisson regression on these variables, where the first two variables are log-transformed. In contrast, non-influential variables are the number of bedrooms in the house and the electricity status of the house.
 
-\quad We may select more regions of Philippines to compare these variables, or select year as one of the explanatory variables since this data is collected every three years.
+\quad The goodness of fit test of poisson model shows that what we have observed fits well.  
 
-\newpage
+\quad For the future work, we may select more regions of Philippines to compare these variables, or select year as one of the explanatory variables since this data is collected every three years. 
+
