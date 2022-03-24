@@ -17,4 +17,6 @@ Group_2_Analysis.Rmd: the analysis code of this project.
 
 Group_2_Analysis.pdf: the analysis report of this project which are generated from "Group_2_Analysis.Rmd". It includes all the code and graph we used in this project.
 
-project_2.pptx: the slides we used to present our analysis results. 
+Group_2_Presentation.pptx: the slides we used to present our analysis results. 
+
+Group_2_Presentation.pdf: PDF version of the slides we used to present our analysis results. 
