@@ -21,6 +21,8 @@ library(kableExtra)
 library(olsrr)
 library(skimr)
 library(GGally)
+library(car)
+library(epiDisplay)
 ```
 
 ```{r}
@@ -40,9 +42,9 @@ data = data[, -2]
 
 # Introduction
 
-\quad The Family Income and Expenditure Survey (FIES) is a survey of every households in a country which is taken every three years. This gives information on the levels of living and disparities in income of each family and spending patterns.
+The Family Income and Expenditure Survey (FIES) is a survey of every households in a country which is taken every three years. This gives information on the levels of living and disparities in income of each family and spending patterns.
 
-\quad In this project, we use the pre-downloaded FIES data of a single region of Philippines. It is Mimaropa, former designated as Region IV-B and formally known as the southwestern Tagalog region. There are 1249 recorded households. Each of them contains 11 following variables: \newline \newline \qquad $\cdot$ `Total.Household.Income` is the Annual household income (in Philippine peso) \newline \qquad $\cdot$ `Region` is the region of the Philippines which a household is in \newline \qquad $\cdot$ `Total.Food.Expenditure` is the annual expenditure by the household on food (in Philippine peso) \newline \qquad $\cdot$ `Household.Head.Sex` is the head of the households sex \newline \qquad $\cdot$ `Household.Head.Age` is the head of the households age (in years) \newline \qquad $\cdot$ `Type.of.Household` is the relationship between the group of people living in the house \newline \qquad $\cdot$ `Total.Number.of.Family.members` is the number of people living in the house \newline \qquad $\cdot$ `House.Floor.Area` is the floor area of the house (in square meter) \newline \qquad $\cdot$ `House.Age` is the age of the building (in years) \newline \qquad $\cdot$ `Number.of.bedrooms` is the number of bedrooms in the house \newline \qquad $\cdot$ `Electricity` is the electricity status of the house (1=Yes, 0=No) \newline\newline where "head of the household" is the person who is in charge of that house.
+In this project, we use the pre-downloaded FIES data of a single region of Philippines. It is Mimaropa, former designated as Region IV-B and formally known as the southwestern Tagalog region. There are 1249 recorded households. Each of them contains 11 following variables: \newline \\newline \\qquad $\cdot$ `Total.Household.Income` is the Annual household income (in Philippine peso) \newline \\qquad $\cdot$ `Region` is the region of the Philippines which a household is in \newline \\qquad $\cdot$ `Total.Food.Expenditure` is the annual expenditure by the household on food (in Philippine peso) \newline \\qquad $\cdot$ `Household.Head.Sex` is the head of the households sex \newline \\qquad $\cdot$ `Household.Head.Age` is the head of the households age (in years) \newline \\qquad $\cdot$ `Type.of.Household` is the relationship between the group of people living in the house \newline \\qquad $\cdot$ `Total.Number.of.Family.members` is the number of people living in the house \newline \\qquad $\cdot$ `House.Floor.Area` is the floor area of the house (in square meter) \newline \\qquad $\cdot$ `House.Age` is the age of the building (in years) \newline \\qquad $\cdot$ `Number.of.bedrooms` is the number of bedrooms in the house \newline \\qquad $\cdot$ `Electricity` is the electricity status of the house (1=Yes, 0=No) \newline\newline where "head of the household" is the person who is in charge of that house.
 
 \quad The Generalised Linear Model (GLM) method will be used as an analysing tool. We are interested in the number of people living in a household (`Total.Number.of.Family.members`). The other variables having influences will be investigated.
 
@@ -172,49 +174,68 @@ Because the dependent variable of the data of this fitting model is the counting
 ### fitting model
 
 ```{r}
-model<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure+Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Floor.Area+House.Age+Number.of.bedrooms+Electricity, data=data, family = "poisson")
+#build preliminary model
+model<-glm(Total.Number.of.Family.members~Total.Household.Income+
+             Total.Food.Expenditure+Household.Head.Sex+Household.Head.Age+
+             Type.of.Household+House.Floor.Area+House.Age+
+             Number.of.bedrooms+Electricity, 
+           data=data, family = "poisson")
 summary(model)
 ```
 
 The stepwise method was used to complete the screening of independent variables
 
 ```{r}
+#use step wise to select features
 step(model)
 ```
 
 Use a better model
 
 ```{r}
-model.better<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure +Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Age+Number.of.bedrooms, data=data, 
-family = "poisson")
+#build new model after selecting features
+model.better<-glm(Total.Number.of.Family.members~Total.Household.Income+
+                    Total.Food.Expenditure +Household.Head.Sex+
+                    Household.Head.Age+Type.of.Household+House.Age+
+                    Number.of.bedrooms, 
+                  data=data, family = "poisson")
 ```
 
 ### Look for outliers in the model
 
 ```{r}
-library(car)
+#find outlier
 outlierTest(model.better)
 ```
 
 Remove the row of outliers
 
 ```{r}
+#delete outlier in the dataset
 data<-data[-944,]
-model.better<-glm(Total.Number.of.Family.members~Total.Household.Income+Total.Food.Expenditure +Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Age+Number.of.bedrooms, data=data, 
-family = "poisson")
+
+#build new model after dropping out outlier
+model.better<-glm(Total.Number.of.Family.members~Total.Household.Income+
+                    Total.Food.Expenditure +Household.Head.Sex+
+                    Household.Head.Age+Type.of.Household+House.Age+
+                    Number.of.bedrooms, 
+                  data=data, family = "poisson")
+
+
 outlierTest(model.better)
 ```
 
 Without outliers, the best model is obtained
 
 ```{r}
+#model summary
 summary(model.better)
 ```
 
 ### Test the goodness of fit of Poisson model
 
 ```{r}
-library(epiDisplay)
+#test the goodness of fit of model
 poisgof(model.better)
 ```
 
@@ -223,6 +244,7 @@ The p value is 1, which indicates that the goodness of fit of the model is good.
 ### Coefficient and interpretation of model
 
 ```{r}
+#transform coefficients into exponential form
 exp(coef(model.better))
 ```
 
@@ -231,22 +253,36 @@ Because the sample data of Total.Household.Income and Total.Food.Expenditure is 
 ## Change variable fitting model
 
 ```{r}
-model<-glm(Total.Number.of.Family.members~log(Total.Household.Income)+log(Total.Food.Expenditure)+Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Floor.Area+House.Age+Number.of.bedrooms+Electricity, data=data, family = "poisson")
+#transform "Total.Household.Income" and "Total.Food.Expenditure" 
+#into  logarithm form and build new model
+model<-glm(Total.Number.of.Family.members~log(Total.Household.Income)+
+             log(Total.Food.Expenditure)+Household.Head.Sex+
+             Household.Head.Age+Type.of.Household+House.Floor.Area+
+             House.Age+Number.of.bedrooms+Electricity, 
+           data=data, family = "poisson")
 summary(model)
 ```
 
 The stepwise method was used to complete the screening of independent variables.
 
 ```{r}
+#use step wise to select features
 step(model)
 ```
 
 Use a better model.
 
 ```{r}
-model.best<-glm(Total.Number.of.Family.members~log(Total.Household.Income)+log(Total.Food.Expenditure) +Household.Head.Sex+Household.Head.Age+Type.of.Household+House.Age+Number.of.bedrooms+Electricity, data=data, 
-family = "poisson")
+#build new model after selecting features
+model.best<-glm(Total.Number.of.Family.members~log(Total.Household.Income)+
+                  log(Total.Food.Expenditure) +Household.Head.Sex+
+                  Household.Head.Age+Type.of.Household+House.Age+
+                  Number.of.bedrooms+Electricity, 
+                data=data, family = "poisson")
+
 outlierTest(model.best)
+
+#model summary
 summary(model.best)
 ```
 
@@ -255,7 +291,7 @@ Without outliers, the best model is obtained.
 ### Test the goodness of fit of Poisson model
 
 ```{r}
-library(epiDisplay)
+#test the goodness of fit of model
 poisgof(model.best)
 ```
 
@@ -266,6 +302,7 @@ The p value is 1, which indicates that the goodness of fit of the model is good.
 ### Coefficient and interpretation of model
 
 ```{r}
+#transform coefficients into exponential form
 exp(coef(model.best))
 ```
 
@@ -276,6 +313,7 @@ In the MIMAROPA region, all variables except Number.of.bedrooms and Electricity 
 ### Poisson regression predicting Total.Number.of.Family.members
 
 ```{r}
+#plot coefficients and their confidence interval
 plot_model(model.best, transform = NULL, show.p = T, show.values = T)
 ```
 
@@ -285,9 +323,8 @@ It can be seen from the above figure that Total.Household.Income,Total.Food.Expe
 
 # Conclusions and Future Work
 
-\quad After selecting models, we have found that the influential variables of the number of people living in a household are : the Annual household income, the annual expenditure by the household on food, the head of the households sex, the head of the households age, the relationship between the group of people living in the house, and the age of the building. The model is built on poisson regression on these variables, where the first two variables are log-transformed. In contrast, non-influential variables are the number of bedrooms in the house and the electricity status of the house.
+After selecting models, we have found that the influential variables of the number of people living in a household are : the Annual household income, the annual expenditure by the household on food, the head of the households sex, the head of the households age, the relationship between the group of people living in the house, and the age of the building. The model is built on poisson regression on these variables, where the first two variables are log-transformed. In contrast, non-influential variables are the number of bedrooms in the house and the electricity status of the house.
 
-\quad The goodness of fit test of poisson model shows that what we have observed fits well.  
+The goodness of fit test of poisson model shows that what we have observed fits well.
 
-\quad For the future work, we may select more regions of Philippines to compare these variables, or select year as one of the explanatory variables since this data is collected every three years. 
-
+For the future work, we may select more regions of Philippines to compare these variables, or select year as one of the explanatory variables since this data is collected every three years.
